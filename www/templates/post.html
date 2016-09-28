@@ -1,0 +1,42 @@
+<ion-header-bar align-title="left" >
+    <div class="buttons" >
+        <button class="button button-icon ion-ios-close-empty" ng-click="goBack()">  Photo</button>
+    </div>   
+    <h1 class="title"></h1>
+    <div class="buttons">
+        <button class="button" ng-click="confimPost()">Next</button>
+    </div>         
+</ion-header-bar>
+<ion-content class="has-tabs">
+    <div ng-if="tabs.gallery">
+        <div>
+            <img class="maxWidth" src="http://www.snopes.com/wordpress/wp-content/uploads/2016/08/trump-family-portrait.jpg">
+        </div>
+        <div class="imageHolder">
+            <div class="imageFrameFour">
+                <img src="http://images.fineartamerica.com/images-medium-large/nature-square--saddleback-dragonfly-carol-groenen.jpg" ng-click="browseDetail(5)">
+            </div>
+            <div class="imageFrameFour">
+                <img src="http://images.fineartamerica.com/images-medium-large/nature-square--saddleback-dragonfly-carol-groenen.jpg" ng-click="browseDetail(5)">
+            </div>
+            <div class="imageFrameFour">
+                <img src="http://images.fineartamerica.com/images-medium-large/nature-square--saddleback-dragonfly-carol-groenen.jpg" ng-click="browseDetail(5)">
+            </div>
+            <div class="imageFrameFour">
+                <img src="http://images.fineartamerica.com/images-medium-large/nature-square--saddleback-dragonfly-carol-groenen.jpg" ng-click="browseDetail(5)">
+            </div>
+        </div>
+    </div>
+    <div ng-if="tabs.photo">
+        Photo plugin operations and results here
+    </div>
+</ion-content>
+<div class="tabs tabs-light">
+    <a class="tab-item" ng-class="{active: tabs.gallery == true }" ng-click="gallery()">
+        Gallery
+    </a>
+    <a class="tab-item" ng-class="{active: tabs.photo == true }" ng-click="photo()">
+        Photo
+    </a>  
+</div>
+
