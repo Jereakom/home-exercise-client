@@ -4,8 +4,8 @@ angular.module('someklone.controllers', [])
 
     Posts.following().then(function(data)
         {
-            $scope.posts = data;
             Posts.getPostFromServer();
+            $scope.posts = data;
         }
     );
     $scope.activeuser = Users.getActiveUser();
@@ -15,13 +15,19 @@ angular.module('someklone.controllers', [])
     $scope.addComment = function(postID, userID, username)
     {
         var comment = $scope.commentScope.comment;
+
         var postToComment = $scope.posts[postID];
+
         var commentID = postToComment.comments.length;
+
         var refers = comment.match(/(@\w+)/ig);
+        // search for username mentions
         if (refers){
           refers = refers.toString().match(/\w+/ig)
         }
+        // search for tags
         var tags = comment.match(/(#\w+)/ig);
+
         if (tags){
           tags = tags.toString().match(/\w+/ig);
         }
@@ -36,9 +42,8 @@ angular.module('someklone.controllers', [])
             userRefs: refers,
             tags: tags
         });
+        $scope.commentScope.comment = "";
     };
-    // $scope.comment = "test";
-    // Posts.addComment("test asdasdasds", 0, 1, "dtrump");
 })
 
 .controller('BrowseCtrl', function($scope, $state) {
