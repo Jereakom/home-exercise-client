@@ -1,7 +1,6 @@
-
 angular.module('someklone.services', []);
 
-angular.module('someklone', ['ionic', 'someklone.controllers', 'someklone.services'])
+angular.module('someklone', ['ionic', 'ngCordova', 'someklone.controllers', 'someklone.services'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
@@ -75,7 +74,7 @@ angular.module('someklone', ['ionic', 'someklone.controllers', 'someklone.servic
           controller: 'SearchCtrl'
       }
     }
-  })  
+  })
 
   .state('tab.activity', {
     url: '/activity',
@@ -100,13 +99,16 @@ angular.module('someklone', ['ionic', 'someklone.controllers', 'someklone.servic
   .state('post', {
     url: '/post',
     templateUrl: 'templates/post.html',
-    controller: 'PostCtrl'    
+    controller: 'PostCtrl'
   })
 
   .state('post-confirm', {
     url: '/confirm',
     templateUrl: 'templates/post-confirm.html',
-    controller: 'PostConfirmCtrl'    
+    controller: 'PostConfirmCtrl',
+    params: {
+      uri: null
+    }
   });
 
   // if none of the above states are matched, use this as the fallback
