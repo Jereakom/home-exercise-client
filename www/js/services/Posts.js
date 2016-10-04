@@ -94,6 +94,27 @@ angular.module('someklone.services').factory('Posts', function($q, $http) {
             posts.push(data);
           });
         },
+        addPost: function(image, caption)
+ -        {
+ -          var newid = posts.length;
+ -          var likes = Math.floor((Math.random() * 1000) + 1);
+ -          posts.push(
+ -            {
+ -                id: newid,
+ -                user: {
+ -                    id: 1,
+ -                    username: "dtrump",
+ -                    profileImageSmall: "http://core0.staticworld.net/images/article/2015/11/111915blog-donald-trump-100629006-primary.idge.jpg"
+ -                },
+ -                image: image,
+ -                imageThumbnail: image,
+ -                likes: [],
+ -                caption: caption,
+ -                tags: [''],
+ -                comments: []
+ -            }
+ -          );
+ -        },
         like: function(postID, userID, username)
         {
           var postToLike = posts[postID];
