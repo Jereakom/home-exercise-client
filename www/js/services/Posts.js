@@ -96,8 +96,6 @@ angular.module('someklone.services').factory('Posts', function($q, $http) {
         },
         like: function(postID, userID, username)
         {
-          var liked = false;
-
           var postToLike = posts[postID];
 
           var currentuser = username;
