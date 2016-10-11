@@ -1,43 +1,6 @@
 angular.module('someklone.services').factory('Posts', function($q, $http) {
 
-    var posts = [
-        {
-            id: 0,
-            user: {
-                id: 1,
-                username: "dtrump",
-                profileImageSmall: "http://core0.staticworld.net/images/article/2015/11/111915blog-donald-trump-100629006-primary.idge.jpg"
-            },
-            image: "http://media1.fdncms.com/sacurrent/imager/u/original/2513252/donald_trump4.jpg",
-            imageThumbnail: "http://media1.fdncms.com/sacurrent/imager/u/original/2513252/donald_trump4.jpg",
-            likes: [],
-            caption: "Always winning #elections",
-            tags: ['elections'],
-            comments: [
-                {
-                    id: 0,
-                    user: {
-                        id: 2,
-                        username: "POTUS"
-                    },
-                    comment: "You're never going to make it don #losing",
-                    userRefs: [],
-                    tags: ["losing"]
-                },
-                {
-                    id: 1,
-                    user: {
-                        id: 3,
-                        username: "HillaryC"
-                    },
-                    comment: "Damn right @POTUS",
-                    userRefs: ["POTUS"],
-                    tags: []
-                },
-            ]
-
-        }
-    ]
+    var posts = [];
 
     return {
         // posts from myself and the from the users i am following
@@ -61,76 +24,88 @@ angular.module('someklone.services').factory('Posts', function($q, $http) {
                 resolve(posts);
             });
         },
+        getAllPosts: function()
+        {
+            return $q(function(resolve, reject){
+            posts = [];
+            $http.get("https://home-exercise-server.herokuapp.com/posts").then(function(data) {
+            for (var i = 0; i < data.data.length; i++) {
+                var id = data.data[i].id;
+                var image = data.data[i].image;
+                var likes = data.data[i].likes;
+                var caption = data.data[i].caption;
+                var tags = data.data[i].tags;
+                var comments = data.data[i].comments;
+                var post ={
+                  "id":id,
+                  "user": {
+                    "id": data.data[i].User.id,
+                    "username": data.data[i].User.username,
+                    "profileImageSmall": data.data[i].User.profileImage
+                  },
+                  "image":image,
+                  "imageThumbnail":image,
+                  "likes":0,
+                  "caption":caption,
+                  "tags":tags,
+                  "comments":comments,
+                  "likes":likes
+                  };
+                posts.push(post);
+              }
+            });
+            resolve(posts);
+          });
+        },
         // get all posts of single user
         getUserPosts: function(userId)
         {
             return $q(function(resolve, reject){
 
-                // execute the search and return results
-
-                resolve(posts); // placeholder
+              var userposts = [];
+              var url = "https://home-exercise-server.herokuapp.com/users/"+userId+"/posts";
+              $http.get(url).then(function(data) {
+              for (var i = 0; i < data.data.length; i++) {
+                var id = data.data[i].id;
+                var image = data.data[i].image;
+                var likes = data.data[i].likes;
+                var caption = data.data[i].caption;
+                var tags = data.data[i].tags;
+                var comments = data.data[i].comments
+                var post ={
+                  "image": image,
+                  "imageThumbnail": image,
+                  "likes":0,
+                  "caption": caption,
+                  "tags": tags,
+                  "comments": comments,
+                  "likes": likes
+                  };
+                  userposts.push(post);
+                };
+              });
+                resolve(userposts);
             });
         },
-        getPostFromServer: function()
+        addPost: function(image, caption, userId)
         {
-          $http.get('https://home-exercise-server.herokuapp.com/api/posts').then(function(response){
-            var string = JSON.stringify(response.data);
-            var id = posts.length;
-            // begin dirty hackjob
-              var data ={"id":id,
-                          "user": {
-                              "id":10,
-                              "username": "schyster",
-                              "profileImageSmall":"http://ericpetersautos.com/wp-content/uploads/2013/11/shyster.jpg"
-                            },
-                          "image":"https://www.nasa.gov/sites/default/files/styles/image_card_4x3_ratio/public/thumbnails/image/leisa_christmas_false_color.png?itok=Jxf0IlS4",
-                          "imageThumbnail":"https://www.nasa.gov/sites/default/files/styles/image_card_4x3_ratio/public/thumbnails/image/leisa_christmas_false_color.png?itok=Jxf0IlS4",
-                          "likes":[],
-                          "caption":"Placeholder post from the server",
-                          "tags":[],
-                          "comments":[]
-                          };
-            // endOf dirty hackjob
-            posts.push(data);
+          var data = {
+            "UserId": userId,
+            "image":image,
+            "imageThumbnail":image,
+            "caption": caption,
+            "tags":[]
+          };
+          $http.post("https://home-exercise-server.herokuapp.com/posts", data).then(function(result){
+            console.log(result);
           });
         },
-        addPost: function(image, caption)
- -        {
- -          var newid = posts.length;
- -          var likes = Math.floor((Math.random() * 1000) + 1);
- -          posts.push(
- -            {
- -                id: newid,
- -                user: {
- -                    id: 1,
- -                    username: "dtrump",
- -                    profileImageSmall: "http://core0.staticworld.net/images/article/2015/11/111915blog-donald-trump-100629006-primary.idge.jpg"
- -                },
- -                image: image,
- -                imageThumbnail: image,
- -                likes: [],
- -                caption: caption,
- -                tags: [''],
- -                comments: []
- -            }
- -          );
- -        },
-        like: function(postID, userID, username)
+        like: function(postID, userID)
         {
-          var postToLike = posts[postID];
-
-          var currentuser = username;
-
-          var index = postToLike.likes.indexOf(currentuser);
-          if (index == -1)
-          {
-            postToLike.likes.push(currentuser);
-            return;
-          }
-
-         var pop = postToLike.likes.indexOf(currentuser);
-         postToLike.likes.splice(pop, 1);
-
-        }
+          var postLikeURL = "https://home-exercise-server.herokuapp.com/likes/"+postID+"/"+userID;
+          $http.post(postLikeURL).then(function(result){
+            return result;
+          });
+       }
     };
 });

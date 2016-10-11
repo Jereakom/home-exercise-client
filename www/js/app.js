@@ -29,6 +29,7 @@ angular.module('someklone', ['ionic', 'ngCordova', 'someklone.controllers', 'som
 
   // setup an abstract state for the tabs directive
   .state('tab', {
+    cache: false,
     url: '/tab',
     abstract: true,
     templateUrl: 'templates/tabs.html'
@@ -94,6 +95,12 @@ angular.module('someklone', ['ionic', 'ngCordova', 'someklone.controllers', 'som
         controller: 'AccountCtrl'
       }
     }
+  })
+
+  .state('login', {
+    url: '/login',
+    templateUrl: 'templates/login.html',
+    controller: 'LoginCtrl'
   })
 
   .state('post', {

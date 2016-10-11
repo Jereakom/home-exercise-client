@@ -1,17 +1,26 @@
 angular.module('someklone.controllers', [])
 
-.controller('HomeCtrl', function($scope, $rootScope, Posts, Users, $http) {
+.controller('HomeCtrl', function($scope, Posts, Users, $http, $state) {
+    if (Users.getActiveUser() == null)
+    {
+        $state.go('login');
+    }
 
-    Posts.following().then(function(data)
-        {
-            Posts.getPostFromServer();
-            $scope.posts = data;
-        }
+    $scope.getPosts = function(){
+      Posts.getAllPosts().then(function(data)
+      {
+        $scope.posts = data;
+      }
     );
+    }
+
     $scope.activeuser = Users.getActiveUser();
-    $scope.commentScope = {
-      like: Posts.like
-    };
+
+    $scope.like = function(postID, userID){
+      Posts.like(postID, userID);
+      $scope.getPosts();
+      };
+
     $scope.addComment = function(postID, userID, username)
     {
         var comment = $scope.commentScope.comment;
@@ -23,7 +32,7 @@ angular.module('someklone.controllers', [])
         var refers = comment.match(/(@\w+)/ig);
         // search for username mentions
         if (refers){
-          refers = refers.toString().match(/\w+/ig)
+          refers = refers.toString().match(/\w+/ig);
         }
         // search for tags
         var tags = comment.match(/(#\w+)/ig);
@@ -162,10 +171,6 @@ angular.module('someklone.controllers', [])
 
         navigator.camera.getPicture(function cameraSuccess(imageUri) {
 
-        // The use of $apply is required to make angular aware of the changed situation,
-
-        // without it you will not see the image on the screen as expected.
-
         $scope.$apply(function(){
 
         $scope.photo.picture = imageUri;
@@ -186,11 +191,7 @@ angular.module('someklone.controllers', [])
         $scope.tabs.photo = false;
         $scope.tabs.gallery = true;
 
-        // fetch photos
-
         var options = {
-
-        // Some common settings are 20, 50, and 100
 
         quality: 100,
 
@@ -207,10 +208,6 @@ angular.module('someklone.controllers', [])
         };
 
         navigator.camera.getPicture(function cameraSuccess(imageUri) {
-
-        // The use of $apply is required to make angular aware of the changed situation,
-
-        // without it you will not see the image on the screen as expected.
 
         $scope.$apply(function(){
 
@@ -242,7 +239,7 @@ angular.module('someklone.controllers', [])
 
 })
 
-.controller('PostConfirmCtrl', function($scope, $state, $ionicHistory, $stateParams, Posts){
+.controller('PostConfirmCtrl', function($scope, $state, $ionicHistory, $stateParams, Posts, Users, $cordovaFileTransfer){
     $scope.goBack = function()
     {
         $ionicHistory.nextViewOptions({
@@ -253,12 +250,81 @@ angular.module('someklone.controllers', [])
 
     $scope.sharePost = function()
     {
-
-        Posts.addPost($scope.imageURI, $scope.post.capt);
-        $state.go('tab.home');
+        $scope.imageURI;
+        $scope.uploadPhoto($scope.imageURI);
     }
+
+    $scope.user = Users.getActiveUser();
+
     $scope.post = {};
     $scope.imageURI = $stateParams.uri;
+
+    $scope.uploadPhoto = function(imageURI)
+    {
+        var options = new FileUploadOptions()
+        options.fileKey = "image";
+
+        $cordovaFileTransfer.upload('https://home-exercise-server.herokuapp.com/upload', imageURI, options).then(function(result) {
+            console.log("File upload complete");
+            console.log(result);
+            console.log(result.response);
+            $scope.uploadResults = "Upload completed successfully"
+            $scope.imageURI = result.response;
+            Posts.addPost($scope.imageURI, $scope.post.capt, $scope.user.id);
+            $state.go('tab.home');
+        }, function(err) {
+            console.log("File upload error");
+            console.log(err);
+            $scope.uploadResults = "Upload failed"
+        }, function (progress) {
+            // constant progress updates
+            console.log(progress);
+        });
+    }
+
+})
+
+.controller('LoginCtrl', function($scope, $state, Users, $http){
+  $scope.data ={};
+  $scope.register = function(){
+    $http.post("https://home-exercise-server.herokuapp.com/register", $scope.data).then(function(result){
+      var id = result.data.id;
+      var username = result.data.username;
+      var profileImage = result.data.profileImage;
+      var data = {
+        "id": id,
+        "username": username,
+        "profileImage": profileImage,
+        "profileImageSmall": profileImage
+      };
+      Users.setActiveUser(data);
+      if (Users.getActiveUser()){
+        $state.go('tab.home');
+      }
+    })
+  };
+
+  $scope.login = function() {
+    $http.post("https://home-exercise-server.herokuapp.com/login", $scope.data).then(function(result){
+      console.log(result.data[0]);
+      console.log(Users.getActiveUser());
+      // Users.setActiveUser(result.data[0]);
+      var id = result.data[0].id;
+      var username = result.data[0].username;
+      var profileImage = result.data[0].profileImage;
+      var data = {
+        "id": id,
+        "username": username,
+        "profileImage": profileImage,
+        "profileImageSmall": profileImage
+      };
+      Users.setActiveUser(data);
+      // console.log(Users.getActiveUser());
+      if (Users.getActiveUser()){
+        $state.go('tab.home');
+      }
+    });
+  };
 })
 
 .controller('ActivityCtrl', function($scope, Users) {
