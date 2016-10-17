@@ -1,5 +1,46 @@
 <ion-view view-title="Dashboard">
+  <ion-header-bar align-title="left" ng-click="goBack()">
+      <div class="buttons" >
+          <button class="button button-icon ion-ios-arrow-back" > Browse</button>
+      </div>
+  </ion-header-bar>
   <ion-content class="padding">
-    Browse detail
+    <div class="list card zeromargin" ng-repeat="post in posts">
+        <div class="item item-avatar">
+        <img ng-src="{{ post.user.profileImageSmall }}">
+        <h2 style="margin-top: 8px;">{{ post.user.username }}</h2>
+        <button class="button button-outline button-positive button-small item-pull-right">
+            Follow
+        </button>
+        </div>
+        <!-- <button type="button" name="button"  >asdasdas</button> -->
+        <div class="item item-image">
+            <img ng-src="{{post.image}}">
+        </div>
+
+        <div class="item">
+        <button class="icon button button-icon ion-ios-heart-outline" ng-click="like({{post.id}}, {{activeuser.id}})"></button>
+        <button class="icon button button-icon ion-ios-chatbubble-outline" ng-click="commentField = !commentField"></button>
+        <button class="icon button button-icon icon ion-ios-redo-outline"></button>
+        <p>
+            <i class="icon ion-ios-heart"></i> {{post.likes.length}} likes
+        </p>
+        <div>
+            <p>
+                <b>{{post.user.username}}</b> {{post.caption}}
+            </p>
+            <p>
+              <span ng-if="post.tags.length > 0">Tags: <span ng-repeat="p in post.tags"  ng-click="searchTag('{{post.tags[$index]}}')">{{post.tags[$index]}} </span>
+            </p>
+            <p ng-repeat="c in post.comments">
+                <b>{{c.User.username}}</b> {{c.text}} <br>
+                <span ng-if="c.tags.length > 0">Tags: <span ng-repeat="t in c.tags"  ng-click="searchTag('{{c.tags[$index]}}')">{{c.tags[$index]}} </span>
+            </p>
+            <div ng-show="commentField">
+                <b>{{activeuser.username}}</b> <input ng-model="comment.comment" placeholder="Comment here..."><button class="icon button button-icon ion-android-send" ng-click="addComment({{post.id}}, {{activeuser.id}})"></button>
+            </div>
+        </div>
+        </div>
+    </div>
   </ion-content>
 </ion-view>

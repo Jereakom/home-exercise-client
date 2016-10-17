@@ -64,16 +64,26 @@ angular.module('someklone', ['ionic', 'ngCordova', 'someklone.controllers', 'som
           templateUrl: 'templates/browse-detail.html',
           controller: 'BrowseDetailCtrl'
       }
+    },
+    params: {
+      id: null,
+      fromCard: null
     }
   })
 
   .state('tab.browse-search', {
     url: '/search',
+    cache: false,
       views: {
         'tab-browse': {
           templateUrl: 'templates/tab-search.html',
-          controller: 'SearchCtrl'
+          controller: 'SearchCtrl',
       }
+    },
+    params: {
+      search: null,
+      goSearch: null,
+      tag: null
     }
   })
 

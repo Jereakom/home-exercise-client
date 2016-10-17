@@ -1,6 +1,6 @@
 angular.module('someklone.controllers', [])
 
-.controller('HomeCtrl', function($scope, Posts, Users, $http, $state) {
+.controller('HomeCtrl', function($scope, Posts, Users, $http, $state, $timeout) {
     if (Users.getActiveUser() == null)
     {
         $state.go('login');
@@ -14,48 +14,48 @@ angular.module('someklone.controllers', [])
     );
     }
 
+    $scope.searchTag = function(searchValue){
+      $state.go('tab.browse-search', {search: searchValue, goSearch: 1, tag: 1});
+    }
+
     $scope.activeuser = Users.getActiveUser();
 
     $scope.like = function(postID, userID){
       Posts.like(postID, userID);
-      $scope.getPosts();
-      };
+      $state.reload();
+    };
 
-    $scope.addComment = function(postID, userID, username)
+    $scope.comment = {};
+
+    $scope.addComment = function(postID, userID)
     {
-        var comment = $scope.commentScope.comment;
-
-        var postToComment = $scope.posts[postID];
-
-        var commentID = postToComment.comments.length;
-
-        var refers = comment.match(/(@\w+)/ig);
-        // search for username mentions
-        if (refers){
-          refers = refers.toString().match(/\w+/ig);
+        var commentURL = "https://home-exercise-server.herokuapp.com/comments/"+postID+"/"+userID;
+        var comment = $scope.comment.comment;
+        if (comment === undefined){
+          comment = "Generic meme response #"+Math.round(Math.random()*10000);
         }
-        // search for tags
-        var tags = comment.match(/(#\w+)/ig);
-
-        if (tags){
-          tags = tags.toString().match(/\w+/ig);
-        }
-        postToComment.comments.push(
-          {
-            id: commentID,
-            user: {
-                id: userID,
-                username: username
-            },
-            comment: comment,
-            userRefs: refers,
-            tags: tags
+        var data = {
+          comment: comment
+        };
+        $http.post(commentURL, data).then(function(){
+          $state.reload();
         });
-        $scope.commentScope.comment = "";
     };
 })
 
-.controller('BrowseCtrl', function($scope, $state) {
+.controller('BrowseCtrl', function($scope, $state, Posts, Users) {
+    if (Users.getActiveUser() == null)
+    {
+        $state.go('login');
+    }
+
+
+    Posts.getAllPosts().then(function(data)
+    {
+      $scope.posts = data;
+    }
+    );
+
 
     $scope.activateSearch = function()
     {
@@ -64,20 +64,79 @@ angular.module('someklone.controllers', [])
 
     $scope.browseDetail = function(id)
     {
-        $state.go('tab.browse-detail', { id: id });
+        $state.go('tab.browse-detail', { id: id, fromCard: 1 });
     }
 
 })
 
-.controller('BrowseDetailCtrl', function($scope, $stateParams) {
-    console.log($stateParams);
+.controller('BrowseDetailCtrl', function($scope, $ionicHistory, $stateParams, Posts, Users, $state, $http) {
+    if (Users.getActiveUser() == null)
+    {
+        $state.go('login');
+    }
+
+    $scope.goBack = function()
+    {
+        $ionicHistory.nextViewOptions({
+            disableBack: true
+        });
+
+        $state.go('tab.browse');
+    }
+
+    $scope.activeuser = Users.getActiveUser();
+
+    if ($stateParams.fromCard == 1){
+      Posts.getOnePost($stateParams.id).then(function(data){
+        $scope.posts = data;
+      });
+    }
+
+    $scope.like = function(postID, userID){
+      Posts.like(postID, userID);
+      $state.reload();
+    };
+
+    $scope.searchTag = function(searchValue){
+      $state.go('tab.browse-search', {search: searchValue, goSearch: 1, tag: 1});
+    }
+
+    $scope.comment = {};
+
+    $scope.addComment = function(postID, userID)
+    {
+        var commentURL = "https://home-exercise-server.herokuapp.com/comments/"+postID+"/"+userID;
+        var comment = $scope.comment.comment;
+        if (comment === undefined){
+          comment = "Generic meme response #"+Math.round(Math.random()*10000);
+        }
+        var data = {
+          comment: comment
+        };
+        $http.post(commentURL, data).then(function(){
+          $state.reload();
+        });
+    };
+
 })
 
-.controller('SearchCtrl', function($scope, $state, $ionicHistory, Users) {
+.controller('SearchCtrl', function($scope, $state, $ionicHistory, Posts, Users, $stateParams, $http) {
+
+    if (Users.getActiveUser() == null)
+    {
+        $state.go('login');
+    }
+
+    Users.getAllUsers();
 
     $scope.input = {
-        searchText: ""
+        searchText: $stateParams.search
     };
+
+    $scope.browseDetail = function(id)
+    {
+        $state.go('tab.browse-detail', { id: id, fromCard: 1 });
+    }
 
     $scope.searchResults = {
         people: [],
@@ -109,30 +168,51 @@ angular.module('someklone.controllers', [])
             if ($scope.tabs.hasOwnProperty(k))
             {
                 $scope.tabs[k] = false;
+                // console.log($scope.tabs);
             }
         }
         $scope.tabs[tab] = true;
+        // console.log($scope.tabs);
     }
 
     $scope.updateSearch = function()
     {
         if($scope.tabs.people == true)
         {
-            Users.searchUser($scope.input.searchText).then(function(result) {
-                $scope.searchResults.people = result;
-            });
+                Posts.searchUser($scope.input.searchText).then(function(result) {
+                  // $scope.searchResults.people = result;
+                  $scope.posts = result;
+              });
         }
         else // search for posts with tags
         {
-
+            Posts.searchTagPosts($scope.input.searchText).then(function(result){
+              $scope.tagposts = result;
+            });
         }
     }
 
+    if ($stateParams.goSearch)
+    {
+      // $scope.tabs.people = true;
+      // $scope.tabs.tags = false;
 
-
+      if ($stateParams.tag)
+      {
+        $scope.tabs.people = false;
+        $scope.tabs.tags = true;
+        $stateParams.tag = null;
+      }
+      $scope.updateSearch();
+    }
 })
 
-.controller('PostCtrl', function($scope, $state, $ionicHistory) {
+.controller('PostCtrl', function($scope, $state, $ionicHistory, Users) {
+    if (Users.getActiveUser() == null)
+    {
+        $state.go('login');
+    }
+
 
     $scope.tabs = {
         gallery: true,
@@ -240,6 +320,11 @@ angular.module('someklone.controllers', [])
 })
 
 .controller('PostConfirmCtrl', function($scope, $state, $ionicHistory, $stateParams, Posts, Users, $cordovaFileTransfer){
+    if (Users.getActiveUser() == null)
+    {
+        $state.go('login');
+    }
+
     $scope.goBack = function()
     {
         $ionicHistory.nextViewOptions({
@@ -250,7 +335,6 @@ angular.module('someklone.controllers', [])
 
     $scope.sharePost = function()
     {
-        $scope.imageURI;
         $scope.uploadPhoto($scope.imageURI);
     }
 
@@ -287,6 +371,7 @@ angular.module('someklone.controllers', [])
 .controller('LoginCtrl', function($scope, $state, Users, $http){
   $scope.data ={};
   $scope.register = function(){
+    console.log(Users.getActiveUser());
     $http.post("https://home-exercise-server.herokuapp.com/register", $scope.data).then(function(result){
       var id = result.data.id;
       var username = result.data.username;
@@ -327,12 +412,27 @@ angular.module('someklone.controllers', [])
   };
 })
 
-.controller('ActivityCtrl', function($scope, Users) {
+.controller('ActivityCtrl', function($scope, Users, $state) {
+    if (Users.getActiveUser() == null)
+    {
+        $state.go('login');
+    }
+
     $scope.activity = Users.getActiveUserActivity();
 })
 
-.controller('AccountCtrl', function($scope, Users, Posts) {
+.controller('AccountCtrl', function($scope, Users, Posts, $state) {
+    if (Users.getActiveUser() == null)
+    {
+        $state.go('login');
+    }
+
     $scope.userData = Users.getActiveUser();
+
+    $scope.browseDetail = function(id)
+    {
+        $state.go('tab.browse-detail', { id: id, fromCard: 1 });
+    }
 
     Posts.getUserPosts($scope.userData.id).then(function(results){
         $scope.posts = results;

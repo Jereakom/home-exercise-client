@@ -11,8 +11,8 @@
             </div>
             <div class="col">
                 <div class="row" style="text-align: center;">
-                    <div class="col">{{ userData.postCount }}<br>posts</div>
-                    <div class="col">{{ userData.followers }}<br> follwers</div>
+                    <div class="col">{{ posts.length }}<br>posts</div>
+                    <div class="col">{{ userData.followers }}<br> followers</div>
                     <div class="col">{{ userData.following }}<br> following</div>
                 </div>
                 <div class="row">
@@ -26,7 +26,7 @@
         </div>
         <div class="imageHolder">
             <div class="imageFrameThree" ng-repeat="p in posts">
-                <img ng-src="{{ p.imageThumbnail }}" ng-click="browseDetail(p.id)">
+                <img ng-src="{{ p.imageThumbnail }}" ng-click="browseDetail({{p.id}})">
             </div>
         </div>
 

@@ -2,7 +2,7 @@
     <ion-header-bar align-title="left" >
         <div class="buttons" >
             <button class="button button-icon ion-ios-arrow-back" ng-click="goBack()"></button>
-        </div>        
+        </div>
         <label class="item-input-wrapper">
           <input type="search" placeholder="Search" class="headerInput" ng-model="input.searchText" ng-change="updateSearch()">
         </label>
@@ -15,26 +15,43 @@
             </a>
             <a class="tab-item" ng-class="{active: tabs.tags == true }" ng-click="tabActivate('tags')">
                 Tags
-            </a>  
+            </a>
         </div>
         <div ng-if="tabs.people">
-            <div class="list">
+            <!-- <div class="list">
                 <a class="item item-avatar" href="#" ng-repeat="p in searchResults.people">
                 <img src="{{ p.profileImageSmall }}">
                 <h2>{{ p.username }}</h2>
-                <p>{{ p.fullName }}</p>
                 </a>
-
+            </div> -->
+            <div class="imageHolder">
+              <div class="imageFrameThree" ng-repeat="post in posts track by $index">
+                <div class="item item-image">
+                    <img ng-src="{{post.image}}" ng-click="browseDetail({{post.id}})">
+                </div>
+                <b>{{post.id}}, {{post.user.username}}</b>
+              </div>
             </div>
         </div>
         <div ng-if="tabs.tags">
-            <div class="list">
-                <a class="item item-avatar" href="#">
+            <!-- <div class="list">
+                <a class="item item-avatar" href="#" ng-repeat="t in searchResults.tags">
                 <i class="icon ion-pound"></i>
-                <h2>#tupac</h2>
-                <p>87,345 posts</p>
+                <span ng-repeat="t in c.tags"  ng-click="doThing('{{c.tags[$index]}}')">{{c.tags[$index]}} </span>
+                <h2 ng>#{{t.tag}}</h2>
+                <h2>#{{t}}</h2>
+                <p>count comes here</p>
                 </a>
+            </div> -->
+            <div class="imageHolder">
+              <div class="imageFrameThree" ng-repeat="post in tagposts track by $index">
+                <div class="item item-image">
+                    <img ng-src="{{post.image}}" ng-click="browseDetail({{post.id}})">
+                </div>
+                <b>{{post.id}}, {{post.user.username}}</b>
+              </div>
             </div>
         </div>
+
     </ion-content>
 </ion-view>
