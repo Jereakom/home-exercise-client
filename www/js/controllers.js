@@ -9,7 +9,9 @@ angular.module('someklone.controllers', [])
     $scope.getPosts = function(){
       Posts.getAllPosts().then(function(data)
       {
-        $scope.posts = data;
+        Posts.getTags().then(function(){
+          $scope.posts = data;
+        });
       }
     );
     }
@@ -38,8 +40,8 @@ angular.module('someklone.controllers', [])
           comment: comment
         };
         $http.post(commentURL, data).then(function(){
-          $state.reload();
-        });
+            $state.reload();
+          });
     };
 })
 
@@ -74,6 +76,10 @@ angular.module('someklone.controllers', [])
     {
         $state.go('login');
     }
+
+    Posts.getAllPosts().then(function(){
+      Posts.getTags();
+    });
 
     $scope.goBack = function()
     {
@@ -127,7 +133,9 @@ angular.module('someklone.controllers', [])
         $state.go('login');
     }
 
-    Users.getAllUsers();
+    // Posts.getAllPosts().then(function(){
+    //   Posts.getTags();
+    // });
 
     $scope.input = {
         searchText: $stateParams.search
@@ -177,19 +185,20 @@ angular.module('someklone.controllers', [])
 
     $scope.updateSearch = function()
     {
-        if($scope.tabs.people == true)
-        {
-                Posts.searchUser($scope.input.searchText).then(function(result) {
-                  // $scope.searchResults.people = result;
-                  $scope.posts = result;
-              });
-        }
-        else // search for posts with tags
-        {
+
+          if($scope.tabs.people == true)
+          {
+            Posts.searchUser($scope.input.searchText).then(function(result) {
+              // $scope.searchResults.people = result;
+              $scope.posts = result;
+            });
+          }
+          else // search for posts with tags
+          {
             Posts.searchTagPosts($scope.input.searchText).then(function(result){
               $scope.tagposts = result;
             });
-        }
+          }
     }
 
     if ($stateParams.goSearch)
@@ -426,6 +435,10 @@ angular.module('someklone.controllers', [])
     {
         $state.go('login');
     }
+
+    Posts.getAllPosts().then(function(){
+      Posts.getTags();
+    });
 
     $scope.userData = Users.getActiveUser();
 

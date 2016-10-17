@@ -23,6 +23,15 @@ angular.module('someklone.services').factory('Posts', function($q, $http) {
                 resolve(posts);
             });
         },
+        getTags: function()
+        {
+          return $q(function(resolve, reject){
+              $http.get("https://home-exercise-server.herokuapp.com/comments").then(function(res){
+                tags = res;
+                resolve(res);
+              });
+          });
+        },
         searchUser: function(searchWord)
         {
           var upperCaseSearchWord = searchWord.toUpperCase();
@@ -57,8 +66,10 @@ angular.module('someklone.services').factory('Posts', function($q, $http) {
               {
                 // posts.caption;
                 // posts.comments.tags;
-                 var allTags = [];
+                // $http.get("https://home-exercise-server.herokuapp.com/comments").then(function(res){
+                //   tags = res;
 
+                var allTags = [];
                  for (var i = 0; i < posts.length; i++) {
                    var tag = posts[i].tags;
                    if (tag != null){
@@ -84,7 +95,7 @@ angular.module('someklone.services').factory('Posts', function($q, $http) {
                     }
 
                   }
-                  allTags;
+                // });
 
                   var matches = allTags.filter(function(p){
                       if (p != null){
